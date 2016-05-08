@@ -7,6 +7,8 @@ use std::io::Write;
 use url::Url;
 
 use fetching::UrlState;
+use std::process;
+
 
 mod fetching;
 mod parsing;
@@ -14,10 +16,10 @@ mod crawling;
 
 fn main() {
     let args: Vec<_> = env::args().collect();
-    if args.len() > 2 {
+    if args.len() > 3 {
         let start_url_string = &args[1];
         let n_threads = args[2].parse::<i32>().unwrap();
-        print!("Number of threads: {}", n_threads);
+        let n_max_to_crawl = args[3].parse::<i32>().unwrap();
 
         // TODO: a proper error message here.
         let start_url = Url::parse(start_url_string).unwrap();
@@ -43,6 +45,10 @@ fn main() {
                    success_count,
                    fail_count);
             stdout().flush().unwrap();
+
+            if success_count >= n_max_to_crawl {
+                process::exit(0);
+            }
         }
 
     } else {
