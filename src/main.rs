@@ -14,8 +14,10 @@ mod crawling;
 
 fn main() {
     let args: Vec<_> = env::args().collect();
-    if args.len() > 1 {
+    if args.len() > 2 {
         let start_url_string = &args[1];
+        let n_threads = args[2].parse::<i32>().unwrap();
+        print!("Number of threads: {}", n_threads);
 
         // TODO: a proper error message here.
         let start_url = Url::parse(start_url_string).unwrap();
@@ -26,7 +28,7 @@ fn main() {
         let mut success_count = 0;
         let mut fail_count = 0;
 
-        for url_state in crawling::crawl(&domain, &path_components.join("/")) {
+        for url_state in crawling::crawl(&domain, &path_components.join("/"), n_threads) {
             match url_state {
                 UrlState::Accessible(_) => {
                     success_count += 1;

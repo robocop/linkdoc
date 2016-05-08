@@ -42,13 +42,13 @@ impl Iterator for Crawler {
     }
 }
 
-const THREADS: i32 = 10;
-
 fn crawl_worker_thread(domain: &str,
                        to_visit: Arc<Mutex<Vec<String>>>,
                        visited: Arc<Mutex<HashSet<String>>>,
                        active_count: Arc<Mutex<i32>>,
-                       url_states: Sender<UrlState>) {
+                       url_states: Sender<UrlState>,
+                       n_threads: i32,
+) {
     loop {
         let current;
         {
@@ -67,7 +67,7 @@ fn crawl_worker_thread(domain: &str,
             };
             current = to_visit_val.pop().unwrap();
             *active_count_val += 1;
-            assert!(*active_count_val <= THREADS);
+            assert!(*active_count_val <= n_threads);
         }
 
         {
@@ -112,7 +112,7 @@ fn crawl_worker_thread(domain: &str,
 
 /// Starting at start_url, recursively iterate over all the URLs which match
 /// the domain, and return an iterator of their URL status.
-pub fn crawl(domain: &str, start_url: &str) -> Crawler {
+pub fn crawl(domain: &str, start_url: &str, n_threads:i32) -> Crawler {
     let to_visit = Arc::new(Mutex::new(vec![start_url.to_owned()]));
     let active_count = Arc::new(Mutex::new(0));
     let visited = Arc::new(Mutex::new(HashSet::new()));
@@ -125,7 +125,7 @@ pub fn crawl(domain: &str, start_url: &str) -> Crawler {
         url_states: rx,
     };
 
-    for _ in 0..THREADS {
+    for _ in 0..n_threads {
         let domain = domain.to_owned();
         let to_visit = to_visit.clone();
         let visited = visited.clone();
@@ -133,7 +133,7 @@ pub fn crawl(domain: &str, start_url: &str) -> Crawler {
         let tx = tx.clone();
 
         thread::spawn(move || {
-            crawl_worker_thread(&domain, to_visit, visited, active_count, tx);
+            crawl_worker_thread(&domain, to_visit, visited, active_count, tx, n_threads);
         });
     }
 
