@@ -88,7 +88,7 @@ fn crawl_worker_thread(domain: &str,
 
         // If it's accessible and it's on the same domain:
         if let UrlState::Accessible(ref url) = state.clone() {
-            if url.domain() == Some(&domain) {
+            //if url.domain() == Some(&domain) {
                 // then fetch it and append all the URLs found.
                 let new_urls = fetch_all_urls(&url);
 
@@ -96,7 +96,7 @@ fn crawl_worker_thread(domain: &str,
                 for new_url in new_urls {
                     to_visit_val.push(new_url);
                 }
-            }
+            //}
         }
 
         {
