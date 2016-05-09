@@ -37,7 +37,7 @@ fn main() {
                 }
                 status => {
                     fail_count += 1;
-                    println!("{}", status);
+                    // println!("{}", status);
                 }
             }
 
